@@ -33,6 +33,11 @@ func TestCreateFromRawBytes(t *testing.T) {
 		t.Error(fmt.Sprintf("Expected system_id %s got",password), string(pdu.password))
 	}
 
+	system_type := "SUBMIT1"
+	if string(pdu.system_type) != system_type {
+		t.Error(fmt.Sprintf("Expected system_id %s got",system_type), string(pdu.system_type))
+	}
+
 	address_range := ""
 	if string(pdu.address_range) != address_range {
 		t.Error(fmt.Sprintf("Expected system_id %s got",address_range), string(pdu.address_range))
@@ -57,3 +62,33 @@ func TestIncomplete(t *testing.T) {
 	}
 
 }
+
+func TestPackString(t *testing.T) {
+	var buf []byte
+	data := []byte("Test")
+	if len(data) != 4 {
+		t.Error("Expected 4 byte array got", len(data))
+	}
+
+	appendCOctetString(&buf, data)
+	if len(buf) != 5 {
+		t.Error("Expected 4 byte array got", len(buf))
+	}
+}
+
+func TestCreateBindPacket(t *testing.T) {
+	data := []byte{0x00,0x00,0x00,0x2F,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x53,0x4D,0x50,0x50,0x33,0x54,0x45,0x53,0x54,0x00,
+		0x73,0x65,0x63,0x72,0x65,0x74,0x30,0x38,0x00,0x53,0x55,0x42,0x4D,0x49,0x54,0x31,0x00,0x00,0x01,0x01,0x00}
+
+	pdu := Bind(1, PDU_COMMAND_BIND_TX, "SMPP3TEST","secret08", "SUBMIT1", 0, 1, 1, "")
+	packet := pdu.pack()
+
+	if len(packet) != 47 {
+		t.Error("Expected packet length 47 got", len(packet))
+	}
+
+	if string(data) != string(packet) {
+		t.Error("Expected packet to match got ", string(packet))
+	}
+}
+

@@ -60,8 +60,33 @@ type pdu struct {
 	address_range []byte
 }
 
-func atoi(byte []byte) (uint32) {
+func (p *pdu) pack () ([]byte) {
+	var packet []byte
+	var body []byte
+
+	switch p.command_id {
+	case PDU_COMMAND_BIND_TX,PDU_COMMAND_BIND_RX,PDU_COMMAND_BIND_TRX:
+		body = packBindBody(*p)
+	}
+
+	p.command_length = uint32(len(body) + 16)
+
+	appendInteger(&packet, p.command_length)
+	appendInteger(&packet, p.command_id)
+	appendInteger(&packet, p.command_status)
+	appendInteger(&packet, p.sequence_number)
+
+
+	packet = append(packet, body...)
+
+	return packet
+}
+
+func unpackInteger(byte []byte) (uint32) {
 	return uint32(byte[0]) << 24 + uint32(byte[1]) << 16 + uint32(byte[2]) << 8 + uint32(byte[3])
+}
+func packInteger(num uint32) ([]byte) {
+	return []byte{byte(num >> 24),byte(num >> 16),byte(num >> 8),byte(num)}
 }
 func cOctetString(raw []byte, offset int, max int) ([]byte, int) {
 	var result []byte
@@ -80,10 +105,10 @@ func Pdu(raw []byte) (pdu) {
 	var rawLen = len(raw)
 
 
-	output.command_length = atoi(raw[0:4])
-	output.command_id = atoi(raw[4:8])
-	output.command_status = atoi(raw[8:12])
-	output.sequence_number = atoi(raw[12:16])
+	output.command_length = unpackInteger(raw[0:4])
+	output.command_id = unpackInteger(raw[4:8])
+	output.command_status = unpackInteger(raw[8:12])
+	output.sequence_number = unpackInteger(raw[12:16])
 
 
 
@@ -115,4 +140,45 @@ func bindBody(raw []byte, output *pdu) {
 	offset++
 
 	output.address_range,_ = cOctetString(raw, offset, 41)
+}
+
+func appendCOctetString(buf *[]byte, str []byte) {
+	*buf = append(*buf, str...)
+	*buf = append(*buf, 0x00) // Null Ternimate strings
+}
+func appendInteger(buf *[]byte, num uint32) {
+	str := packInteger(num)
+	*buf = append(*buf, str...)
+}
+
+func packBindBody(pdu pdu) ([]byte) {
+	var body []byte
+
+	appendCOctetString(&body, pdu.system_id)
+	appendCOctetString(&body, pdu.password)
+	appendCOctetString(&body, pdu.system_type)
+
+	body = append(body, byte(pdu.interface_version))
+	body = append(body, byte(pdu.addr_ton))
+	body = append(body, byte(pdu.addr_npi))
+
+	appendCOctetString(&body, pdu.address_range)
+
+	return body
+}
+
+func Bind(sequence_number uint32, command uint32, system_id string, password string, system_type string, interface_version int, addr_ton int, addr_npi int, address_range string) (pdu) {
+	var bind pdu;
+	bind.command_id = command
+	bind.command_status = 0
+	bind.sequence_number = sequence_number
+
+	bind.system_id = []byte(system_id)
+	bind.password = []byte(password)
+	bind.system_type = []byte(system_type)
+	bind.interface_version = interface_version
+	bind.addr_ton = addr_ton
+	bind.addr_npi = addr_npi
+	bind.address_range = []byte(address_range)
+	return bind;
 }
