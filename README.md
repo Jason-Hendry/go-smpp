@@ -2,6 +2,9 @@
 
 ## Client Usage
 
+```
+go get github.com/Jason-Hendry/go-smpp
+```
 
 ```
 import (
