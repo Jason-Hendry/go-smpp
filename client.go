@@ -10,7 +10,7 @@ func Client(host, username, password, source, destination, message  string) {
 	addr,err := net.ResolveTCPAddr("tcp", host)
 	HandleError("Failed to resolve", err)
 
-	laddr,err := net.ResolveTCPAddr("tcp", ":61775")
+	laddr,err := net.ResolveTCPAddr("tcp", ":0")
 	HandleError("Failed to resolve", err)
 
 	conn,err := net.DialTCP("tcp", laddr, addr)
