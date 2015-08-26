@@ -12,13 +12,10 @@ const PDU_COMMAND_UNBIND     = 6
 const PDU_COMMAND_REPLACE_SM = 7
 const PDU_COMMAND_CANCEL_SM  = 8
 const PDU_COMMAND_BIND_TRX   = 9
-
 const PDU_COMMAND_ENQUIRE    = 0x15
-
 const PDU_COMMAND_SUBMIT_MULTI = 0x21
 const PDU_COMMAND_ALERT        = 0x0102
 const PDU_COMMAND_DATA_SM      = 0x0103
-
 const PDU_COMMAND_RESP = 0x80000000
 
 const PDU_OPT_PARAM_DEST_ADDR_SUBUNIT 				= 0x0005 // GSM
@@ -65,6 +62,27 @@ const PDU_OPT_PARAM_MS_VALIDITY 					= 0x1204 // CDMA, TDMA
 const PDU_OPT_PARAM_ALERT_ON_MESSAGE_DELIVERY 		= 0x130C // CDMA
 const PDU_OPT_PARAM_ITS_REPLY_TYPE 					= 0x1380 // CDMA
 const PDU_OPT_PARAM_ITS_SESSION_INFO 				= 0x1383 // CDMA
+
+const PDU_TON_UNKNOWN           = 0
+const PDU_TON_INTERNATIONAL     = 1
+const PDU_TON_NATIONAL          = 2
+const PDU_TON_NETWORK_SPECIFIC  = 3
+const PDU_TON_SUBSCRIBER_NUMBER = 4
+const PDU_TON_ALPHANUMERIC      = 5
+const PDU_TON_ABBREVIATED       = 6
+
+const PDU_NPI_UNKNOWN           = 0
+const PDU_NPI_ISDN              = 1
+const PDU_NPI_DATA              = 3
+const PDU_NPI_TELEX             = 4
+const PDU_NPI_LAND_MOBILE       = 6
+const PDU_NPI_NATIONAL          = 8
+const PDU_NPI_PRIVATE           = 9
+const PDU_NPI_ERMES             = 10
+const PDU_NPI_INTERNET          = 14
+const PDU_NPI_WAP               = 18
+
+const PDU_DELIVERY_RECEIPT_SMSC = 1 // SMSC delivery receipt
 
 type parameter struct {
 	tag uint16
@@ -121,7 +139,7 @@ func (p *pdu) Pack() ([]byte) {
 	switch p.command_id {
 	case PDU_COMMAND_BIND_TX,PDU_COMMAND_BIND_RX,PDU_COMMAND_BIND_TRX:
 		body = packBindBody(*p)
-	case PDU_COMMAND_SUBMIT_SM:
+	case PDU_COMMAND_SUBMIT_SM,PDU_COMMAND_DATA_SM,PDU_COMMAND_DELIVER_SM:
 		body = packSubmitBody(*p)
 	}
 
@@ -223,11 +241,11 @@ func Pdu(raw []byte) (pdu) {
 		switch output.command_id {
 		case PDU_COMMAND_BIND_TX,PDU_COMMAND_BIND_RX,PDU_COMMAND_BIND_TRX:
 			unpackBindBody(raw,&output)
-		case PDU_COMMAND_SUBMIT_SM:
+		case PDU_COMMAND_SUBMIT_SM,PDU_COMMAND_DATA_SM,PDU_COMMAND_DELIVER_SM:
 			unpackSubmitBody(raw,&output)
 		case PDU_COMMAND_BIND_TX+PDU_COMMAND_RESP,PDU_COMMAND_BIND_RX+PDU_COMMAND_RESP,PDU_COMMAND_BIND_TRX+PDU_COMMAND_RESP:
 			unpackBindBodyResp(raw,&output)
-		case PDU_COMMAND_SUBMIT_SM+PDU_COMMAND_RESP:
+		case PDU_COMMAND_SUBMIT_SM+PDU_COMMAND_RESP,PDU_COMMAND_DATA_SM+PDU_COMMAND_RESP,PDU_COMMAND_DELIVER_SM+PDU_COMMAND_RESP:
 			unpackSubmitBodyResp(raw,&output)
 		}
 

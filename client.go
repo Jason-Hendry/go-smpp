@@ -26,11 +26,16 @@ func Client(host, username, password, source, destination, message  string) {
 	fmt.Printf("BIND Response status: %d\n", bindResp.Command_status)
 
 	sms := SubmitSM(2, "GO-SMPP", 1, 1, source, 1, 1, destination, 3, 0, message)
+	sms.registered_delivery = 4
 	conn.Write(sms.Pack())
 
 	conn.Read(resp)
 	submitSMResp := Pdu(resp)
 	fmt.Printf("Submit Message ID: %s\n", string(submitSMResp.Message_id))
+
+	conn.Read(resp)
+	dlr := Pdu(resp)
+	fmt.Printf("DLR Msg: %s\n", string(dlr.short_message))
 
 	conn.Close()
 }
