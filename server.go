@@ -101,9 +101,13 @@ func bind(conn *net.TCPConn, pdu Pdu, server SmppServer) {
 
 func (server SmppServer) Start() {
 	bindAddr,err := net.ResolveTCPAddr("tcp", server.bindAddr)
-	HandleError(fmt.Sprintf("Failed to resolve %s",server.bindAddr), err)
+	if !HandleError(fmt.Sprintf("Failed to resolve %s",server.bindAddr), err) {
+		return
+	}
 	bind,err := net.ListenTCP("tcp", bindAddr)
-	HandleError(fmt.Sprintf("Failed to bind to %s",server.bindAddr), err)
+	if !HandleError(fmt.Sprintf("Failed to bind to %s",server.bindAddr), err) {
+		return
+	}
 
 	for {
 		conn,err := bind.AcceptTCP()

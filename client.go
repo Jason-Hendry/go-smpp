@@ -2,11 +2,25 @@ package go_smpp
 import (
 	"net"
 	"fmt"
-	"os/signal"
-	"os"
 	"time"
 )
 
+type Client struct {
+	host string
+	username string
+	password string
+	conn *net.TCPConn
+	OnBind OnPduCallback
+	OnSubmit OnPduCallback
+}
+
+func NewClient(host, username, password string) (Client) {
+	var client Client;
+	client.host = host
+	client.username = username
+	client.password = password
+	return client;
+}
 
 func listen(conn *net.TCPConn) {
 	resp := make([]byte, 10240);
@@ -44,9 +58,8 @@ func keepAlive(conn *net.TCPConn) {
 	}
 }
 
-func Client(host, username, password, source, destination, message  string) {
-
-	addr,err := net.ResolveTCPAddr("tcp", host)
+func (c Client) Start() {
+	addr,err := net.ResolveTCPAddr("tcp", c.host)
 	if !HandleError("Failed to resolve", err) {
 		return
 	}
@@ -63,25 +76,18 @@ func Client(host, username, password, source, destination, message  string) {
 	go listen(conn)
 	go keepAlive(conn)
 
-	bind := Bind(1, PDU_COMMAND_BIND_TX, username, password, "GO-SMPP", 0, 1, 1, "")
+	bind := Bind(1, PDU_COMMAND_BIND_TX, c.username, c.password, "GO-SMPP", 0, 1, 1, "")
 	data := bind.Pack()
 	fmt.Printf("Wrote %d bytes\n", len(data))
 	conn.Write(data)
 
-
-	sms := SubmitSM(2, "GO-SMPP", 1, 1, source, 1, 1, destination, 3, 0, message)
-	sms.registered_delivery = 4
-	data = sms.Pack()
-	fmt.Printf("Wrote %d bytes\n", len(data))
-	conn.Write(data)
-
-
-
-	fmt.Println("Wait to die")
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
-	s := <-c
-	fmt.Println("Got signal:", s)
-	conn.Close()
-
+	c.conn = conn;
 }
+
+func (c Client) Send(source,destination,message string) {
+	sms := SubmitSM(1, "GO-SMPP", 1, 1, source, 1, 1, destination, PDU_DATA_CODING_LATIN_1, 0, message)
+	data := sms.Pack()
+	fmt.Printf("Wrote %d bytes\n", len(data))
+	c.conn.Write(data)
+}
+
