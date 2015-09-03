@@ -17,7 +17,7 @@ func TestReadMore(t *testing.T) {
 	more = more[:0]
 	buf = buf[:0]
 
-	var smppPdu pdu
+	var smppPdu Pdu
 
 	read = data1
 	smppPdu = readMore(&buf, &more, &read)

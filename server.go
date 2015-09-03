@@ -3,20 +3,39 @@ import (
 	"net"
 	"fmt"
 	"io"
+	"code.google.com/p/go-uuid/uuid"
 )
 
-func handleClient(conn *net.TCPConn) {
+type SmppServer struct {
+	NodeUuid uuid.UUID
+	Node string
+	bindAddr string
+	OnBind OnPduCallback
+	OnSubmit OnPduCallback
+	connections map[string]*net.TCPConn
+}
+type OnPduCallback func(Pdu, SmppServer, *net.TCPConn)
+
+func handleClient(conn *net.TCPConn, server SmppServer) {
 	buf := make([]byte, 20480)
 	read := make([]byte, 10240)
 	more := make([]byte, 20480)
 	more = more[:0]
 	buf = buf[:0]
-	var smppPdu pdu
+	var smppPdu Pdu
 	for {
-		_,err := conn.Read(read)
-		smppPdu = readMore(&buf, &more, &read)
+		fmt.Printf("Node: %s Waiting to read\n", server.Node)
+		readLen,err := conn.Read(read[0:])
+		if readLen == 0 {
+			fmt.Printf("Node: %s Read %d Bytes and probably quit\n", server.Node, readLen)
+			return
+		}
+		fmt.Printf("Node: %s Add %d bytes to buffer\n", server.Node, readLen)
+		smppPdu = readMore(&buf, &more, &read, readLen)
 		if smppPdu.complete {
-			processPdu(conn, smppPdu)
+			fmt.Printf("Node: %s Got one\n", server.Node)
+			processPdu(conn, smppPdu, server)
+
 		}
 		if err == io.EOF {
 
@@ -25,55 +44,80 @@ func handleClient(conn *net.TCPConn) {
 	}
 }
 
-func readMore(bufP *[]byte, moreP *[]byte, readP *[]byte) (smppPdu pdu) {
+//      00 00 00 00 00 00 00 00
+// buf
+// more
+// read 01 12 12 32 34 34 34 12 8
+// buf  01 12 12 32 34 34 34 12
+// more 01 12 12 32 34 34 34 12
+// read 02 23 12_00 00 00 00 00 3
+// buf  01 12 12 32 34 34 34 12 02 23 12
+// more
+func readMore(bufP *[]byte, moreP *[]byte, readP *[]byte, readLen int) (smppPdu Pdu) {
 	buf := *bufP
 	more := *moreP
 	read := *readP
 
 	buf = more[:len(more)] // Leftover from previous packet
-	buf = append(buf, read[:len(read)]...) // Newly ready data from socket
+	buf = append(buf, read[:readLen]...) // Newly ready data from socket
 
-	smppPdu = Pdu(buf)
+	smppPdu = RawPdu(buf)
 	if smppPdu.complete == true {
 		if uint32(len(read)) > smppPdu.command_length {
 			more = more[:0]
-			more = append(more, buf[len(buf)-int(smppPdu.command_length):]...)
+			more = append(more, buf[int(smppPdu.command_length):len(buf)]...)
 		}
 	} else {
-		more = append(more, read...)
+		more = buf[0:len(buf)]
 	}
 	*moreP = more;
 	return smppPdu
 }
 
-func processPdu(conn *net.TCPConn, pdu pdu) {
+func processPdu(conn *net.TCPConn, pdu Pdu, server SmppServer) {
+
+	fmt.Printf("Node: %s Got %d\n", server.Node, pdu.command_id)
+
 	switch pdu.command_id {
-		case PDU_COMMAND_BIND_TX:
-		case PDU_COMMAND_BIND_TRX:
-		case PDU_COMMAND_BIND_RX:
-			bind(conn, pdu)
+		case PDU_COMMAND_BIND_TX, PDU_COMMAND_BIND_TRX, PDU_COMMAND_BIND_RX:
+			fmt.Printf("Node: %s Bind\n", server.Node)
+			go server.OnBind(pdu, server, conn)
+			bind(conn, pdu, server)
+	case PDU_COMMAND_SUBMIT_SM:
+		fmt.Printf("Node: %s SUBMIT_SM\n", server.Node)
+		go server.OnSubmit(pdu, server, conn)
+	case PDU_COMMAND_ENQUIRE:
+		fmt.Printf("Node: %s ENQUIRE\n", server.Node)
+		resp := EnquireLinkResp(pdu)
+		conn.Write(resp.Pack())
 	}
 }
 
-func bind(conn *net.TCPConn, pdu pdu) {
+func bind(conn *net.TCPConn, pdu Pdu, server SmppServer) {
 	fmt.Println("Bind User:%s Pass:%s", string(pdu.system_id), string(pdu.password))
-
+	resp := BindResp(pdu, 0, server.Node)
+	conn.Write(resp.Pack())
 }
 
-func start(bindAddress string) {
-	bindAddr,err := net.ResolveTCPAddr("tcp", bindAddress)
-	HandleError(fmt.Sprintf("Failed to resolve %s",bindAddress), err)
+func (server SmppServer) Start() {
+	bindAddr,err := net.ResolveTCPAddr("tcp", server.bindAddr)
+	HandleError(fmt.Sprintf("Failed to resolve %s",server.bindAddr), err)
 	bind,err := net.ListenTCP("tcp", bindAddr)
-	HandleError(fmt.Sprintf("Failed to bind to %s",bindAddress), err)
+	HandleError(fmt.Sprintf("Failed to bind to %s",server.bindAddr), err)
+
 	for {
 		conn,err := bind.AcceptTCP()
 		HandleError("Failed to accept client", err)
-		go handleClient(conn)
+		fmt.Printf("Node: %s Connection: %s\n", server.Node, conn.RemoteAddr().String())
+		// server.connections[conn.RemoteAddr().String()] = conn
+		go handleClient(conn, server)
 	}
 }
 
 
-func Server(){
-
-
+func Server(node string, bindAddr string) (SmppServer) {
+	var server SmppServer
+	server.Node = node
+	server.bindAddr = bindAddr
+	return server
 }

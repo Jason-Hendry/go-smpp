@@ -18,6 +18,43 @@ const PDU_COMMAND_ALERT        = 0x0102
 const PDU_COMMAND_DATA_SM      = 0x0103
 const PDU_COMMAND_RESP = 0x80000000
 
+
+const PDU_COMMAND_STATUS_ESME_ROK = 0x00000000 				// No Error
+const PDU_COMMAND_STATUS_ESME_RINVMSGLEN = 0x00000001 		// Message Length is invalid
+const PDU_COMMAND_STATUS_ESME_RINVCMDLEN = 0x00000002 		// Command Length is invalid
+const PDU_COMMAND_STATUS_ESME_RINVCMDID = 0x00000003 		// Invalid Command ID
+const PDU_COMMAND_STATUS_ESME_RINVBNDSTS = 0x00000004 		// Incorrect BIND Status for given command
+const PDU_COMMAND_STATUS_ESME_RALYBND = 0x00000005 			// ESME Already in Bound State
+const PDU_COMMAND_STATUS_ESME_RINVPRTFLG = 0x00000006 		// Invalid Priority Flag
+const PDU_COMMAND_STATUS_ESME_RINVREGDLVFLG = 0x00000007 	// Invalid Registered Delivery Flag
+const PDU_COMMAND_STATUS_ESME_RSYSERR = 0x00000008 			// System Error
+const PDU_COMMAND_STATUS_ESME_RINVSRCADR = 0x0000000A 		// Invalid Source Address
+const PDU_COMMAND_STATUS_ESME_RINVDSTADR = 0x0000000B 		// Invalid Dest Addr
+const PDU_COMMAND_STATUS_ESME_RINVMSGID = 0x0000000C 		// Message ID is invalid
+const PDU_COMMAND_STATUS_ESME_RBINDFAIL = 0x0000000D 		// Bind Failed
+const PDU_COMMAND_STATUS_ESME_RINVPASWD = 0x0000000E 		// Invalid Password
+const PDU_COMMAND_STATUS_ESME_RINVSYSID = 0x0000000F 		// Invalid System ID
+const PDU_COMMAND_STATUS_ESME_RCANCELFAIL = 0x00000011 		// Cancel SM Failed
+const PDU_COMMAND_STATUS_ESME_RREPLACEFAIL = 0x00000013 	// Replace SM Failed
+const PDU_COMMAND_STATUS_ESME_RMSGQFUL = 0x00000014 		// Message Queue Full
+const PDU_COMMAND_STATUS_ESME_RINVSERTYP = 0x00000015 		// Invalid Service Type
+const PDU_COMMAND_STATUS_ESME_RINVNUMDESTS = 0x00000033 	// Invalid number of destinations
+const PDU_COMMAND_STATUS_ESME_RINVDLNAME = 0x00000034 		// Invalid Distribution List name
+const PDU_COMMAND_STATUS_ESME_RINVDESTFLAG = 0x00000040 	// Destination flag is invalid (submit_multi)
+const PDU_COMMAND_STATUS_ESME_RINVSUBREP = 0x00000042 		// Invalid ‘submit with replace’ request(i.e. submit_sm with replace_if_present_flag set)
+const PDU_COMMAND_STATUS_ESME_RINVESMCLASS = 0x00000043 	// Invalid esm_class field data
+const PDU_COMMAND_STATUS_ESME_RCNTSUBDL = 0x00000044 		// Cannot Submit to Distribution List
+const PDU_COMMAND_STATUS_ESME_RSUBMITFAIL = 0x00000045 		// submit_sm or submit_multi failed
+const PDU_COMMAND_STATUS_ESME_RINVSRCTON = 0x00000048 		// Invalid Source address TON
+const PDU_COMMAND_STATUS_ESME_RINVSRCNPI = 0x00000049 		// Invalid Source address NPI
+const PDU_COMMAND_STATUS_ESME_RINVDSTTON = 0x00000050 		// Invalid Destination address TON
+const PDU_COMMAND_STATUS_ESME_RINVDSTNPI = 0x00000051 		// Invalid Destination address NPI
+const PDU_COMMAND_STATUS_ESME_RINVSYSTYP = 0x00000053 		// Invalid system_type field
+const PDU_COMMAND_STATUS_ESME_RINVREPFLAG = 0x00000054 		// Invalid replace_if_present flag
+const PDU_COMMAND_STATUS_ESME_RINVNUMMSGS = 0x00000055 		// Invalid number of messages
+const PDU_COMMAND_STATUS_ESME_RTHROTTLED = 0x00000058 		// Throttling error (ESME has exceeded allowed message limits)
+
+
 const PDU_OPT_PARAM_DEST_ADDR_SUBUNIT 				= 0x0005 // GSM
 const PDU_OPT_PARAM_DEST_NETWORK_TYPE 				= 0x0006 // Generic
 const PDU_OPT_PARAM_DEST_BEARER_TYPE 				= 0x0007 // Generic
@@ -84,13 +121,37 @@ const PDU_NPI_WAP               = 18
 
 const PDU_DELIVERY_RECEIPT_SMSC = 1 // SMSC delivery receipt
 
+const PDU_DATA_CODING_DEFAULT  = 0  // 0 0 0 0 0 0 0 0 SMSC Default Alphabet
+const PDU_DATA_CODING_IA5      = 1  // 0 0 0 0 0 0 0 1 IA5 (CCITT T.50)/ASCII (ANSI X3.4) b
+const PDU_DATA_CODING_OCTET_B  = 2  // 0 0 0 0 0 0 1 0 Octet unspecified (8-bit binary) b
+const PDU_DATA_CODING_LATIN_1  = 3  // 0 0 0 0 0 0 1 1 Latin 1 (ISO-8859-1) b
+const PDU_DATA_CODING_OCTET_A  = 4  // 0 0 0 0 0 1 0 0 Octet unspecified (8-bit binary) a
+const PDU_DATA_CODING_JIS      = 5  // 0 0 0 0 0 1 0 1 JIS (X 0208-1990) b
+const PDU_DATA_CODING_CYRLLIC  = 6  // 0 0 0 0 0 1 1 0 Cyrllic (ISO-8859-5) b
+const PDU_DATA_CODING_LATIN    = 7  // 0 0 0 0 0 1 1 1 Latin/Hebrew (ISO-8859-8) b
+const PDU_DATA_CODING_UCS2     = 8  // 0 0 0 0 1 0 0 0 UCS2 (ISO/IEC-10646) a
+const PDU_DATA_CODING_PICT     = 9  // 0 0 0 0 1 0 0 1 Pictogram Encoding b
+const PDU_DATA_CODING_MUSIC    = 10 // 0 0 0 0 1 0 1 0 ISO-2022-JP (Music Codes) b
+// 0 0 0 0 1 0 1 1 reserved
+// 0 0 0 0 1 1 0 0 reserved
+const PDU_DATA_CODING_KANJI    = 13 // 0 0 0 0 1 1 0 1 Extended Kanji JIS(X 0212-1990) b
+const PDU_DATA_CODING_KSC      = 14 // 0 0 0 0 1 1 1 0 KS C 5601 b
+// 0 0 0 0 1 1 1 1 reserved
+
+// 1 0 1 1 1 1 1 1 reserved
+// 1 1 0 0 x x x x GSM MWI control - see [GSM 03.38] d
+// 1 1 0 1 x x x x GSM MWI control - see [GSM 03.38] d
+// 1 1 1 0 x x x x reserved
+// 1 1 1 1 x x x x GSM message class control - see [GSM 03.38] e
+
+
 type parameter struct {
 	tag uint16
 	length uint16
 	value []byte
 }
 
-type pdu struct {
+type Pdu struct {
 	command_length uint32
 	command_id uint32
 	Command_status uint32
@@ -132,15 +193,20 @@ type pdu struct {
 	optionalParameters []parameter
 }
 
-func (p *pdu) Pack() ([]byte) {
+func (p *Pdu) Pack() ([]byte) {
 	var packet []byte
 	var body []byte
 
 	switch p.command_id {
 	case PDU_COMMAND_BIND_TX,PDU_COMMAND_BIND_RX,PDU_COMMAND_BIND_TRX:
 		body = packBindBody(*p)
+	case PDU_COMMAND_BIND_TX+PDU_COMMAND_RESP,PDU_COMMAND_BIND_RX+PDU_COMMAND_RESP,PDU_COMMAND_BIND_TRX+PDU_COMMAND_RESP:
+		body = packBindRespBody(*p)
 	case PDU_COMMAND_SUBMIT_SM,PDU_COMMAND_DATA_SM,PDU_COMMAND_DELIVER_SM:
 		body = packSubmitBody(*p)
+	case PDU_COMMAND_SUBMIT_SM+PDU_COMMAND_RESP,PDU_COMMAND_DATA_SM+PDU_COMMAND_RESP,PDU_COMMAND_DELIVER_SM+PDU_COMMAND_RESP:
+		body = packSubmitRespBody(*p)
+
 	}
 
 	p.command_length = uint32(len(body) + 16)
@@ -156,7 +222,7 @@ func (p *pdu) Pack() ([]byte) {
 	return packet
 }
 
-func (p *pdu) getOptionalParameter(tag uint16) ([]byte) {
+func (p *Pdu) getOptionalParameter(tag uint16) ([]byte) {
 	for i := range p.optionalParameters {
 		if p.optionalParameters[i].tag == tag {
 			return p.optionalParameters[i].value
@@ -164,7 +230,7 @@ func (p *pdu) getOptionalParameter(tag uint16) ([]byte) {
 	}
 	return nil
 }
-func (p *pdu) hasOptionalParameter(tag uint16) (bool) {
+func (p *Pdu) hasOptionalParameter(tag uint16) (bool) {
 	for i := range p.optionalParameters {
 		if p.optionalParameters[i].tag == tag {
 			return true
@@ -172,7 +238,7 @@ func (p *pdu) hasOptionalParameter(tag uint16) (bool) {
 	}
 	return false
 }
-func (p *pdu) updateOptionalParameter(tag uint16, value []byte) {
+func (p *Pdu) updateOptionalParameter(tag uint16, value []byte) {
 	for i := range p.optionalParameters {
 		if p.optionalParameters[i].tag == tag {
 			p.optionalParameters[i].length = uint16(len(value))
@@ -180,7 +246,7 @@ func (p *pdu) updateOptionalParameter(tag uint16, value []byte) {
 		}
 	}
 }
-func (p *pdu) addOptionalParameter(tag uint16, value []byte) {
+func (p *Pdu) addOptionalParameter(tag uint16, value []byte) {
 	var param parameter
 	param.tag = tag
 	param.length = uint16(len(value))
@@ -188,7 +254,7 @@ func (p *pdu) addOptionalParameter(tag uint16, value []byte) {
 	p.optionalParameters = append(p.optionalParameters, param)
 }
 
-func (p *pdu) setOptionalParameter(tag uint16, value []byte) {
+func (p *Pdu) setOptionalParameter(tag uint16, value []byte) {
 	if p.hasOptionalParameter(tag) {
 		p.updateOptionalParameter(tag, value)
 	} else {
@@ -225,8 +291,8 @@ func UnpackOctetString(raw []byte, offset int, length int) ([]byte, int) {
 	return []byte(""),offset+length
 }
 
-func Pdu(raw []byte) (pdu) {
-	var output pdu
+func RawPdu(raw []byte) (Pdu) {
+	var output Pdu
 	var rawLen = len(raw)
 
 	output.command_length = unpackInteger(raw[0:4])
@@ -253,7 +319,7 @@ func Pdu(raw []byte) (pdu) {
 	return output
 }
 
-func unpackBindBody(raw []byte, output *pdu) {
+func unpackBindBody(raw []byte, output *Pdu) {
 	offset := 16
 	output.system_id,offset = UnpackCOctetString(raw, offset, 16)
 	output.password,offset = UnpackCOctetString(raw, offset, 9)
@@ -270,13 +336,13 @@ func unpackBindBody(raw []byte, output *pdu) {
 }
 
 
-func unpackBindBodyResp(raw []byte, output *pdu) {
+func unpackBindBodyResp(raw []byte, output *Pdu) {
 	offset := 16
 	output.system_id,offset = UnpackCOctetString(raw, offset, 16)
 	unpackTLVs(raw, output, offset)
 }
 
-func unpackSubmitBody(raw []byte, output *pdu) {
+func unpackSubmitBody(raw []byte, output *Pdu) {
 	offset := 16
 
 	output.service_type,offset = UnpackCOctetString(raw, offset, 6)
@@ -319,18 +385,18 @@ func unpackSubmitBody(raw []byte, output *pdu) {
 	unpackTLVs(raw, output, offset)
 }
 
-func unpackSubmitBodyResp(raw []byte, output *pdu) {
+func unpackSubmitBodyResp(raw []byte, output *Pdu) {
 	offset := 16
 
 	output.Message_id,offset = UnpackCOctetString(raw, offset, 65)
 }
 
-func unpackTLVs(raw []byte, output *pdu, offset int) {
+func unpackTLVs(raw []byte, output *Pdu, offset int) {
 	for uint32(offset) < output.command_length {
 		offset = unpackTLV(raw, output, offset)
 	}
 }
-func unpackTLV(raw []byte, output *pdu, offset int) (int) {
+func unpackTLV(raw []byte, output *Pdu, offset int) (int) {
 	var param parameter
 	fmt.Println(raw[offset], raw[offset+1])
 
@@ -342,7 +408,7 @@ func unpackTLV(raw []byte, output *pdu, offset int) (int) {
 	return offset
 }
 
-func packTLVs(body *[]byte, p pdu) {
+func packTLVs(body *[]byte, p Pdu) {
 	var tag, length uint16
 	var value,buf []byte
 
@@ -365,7 +431,7 @@ func appendInteger(buf *[]byte, num uint32) {
 	*buf = append(*buf, str...)
 }
 
-func packBindBody(pdu pdu) ([]byte) {
+func packBindBody(pdu Pdu) ([]byte) {
 	var body []byte
 
 	appendCOctetString(&body, pdu.system_id)
@@ -381,7 +447,29 @@ func packBindBody(pdu pdu) ([]byte) {
 	return body
 }
 
-func packSubmitBody(pdu pdu) ([]byte) {
+func packBindRespBody(pdu Pdu) ([]byte) {
+	var body []byte
+
+	appendCOctetString(&body, pdu.system_id)
+
+	packTLVs(&body, pdu)
+	return body
+}
+
+func packSubmitRespBody(pdu Pdu) ([]byte) {
+	var body []byte
+
+	appendCOctetString(&body, pdu.Message_id)
+
+	if(pdu.command_id == PDU_COMMAND_DATA_SM+PDU_COMMAND_RESP) {
+		packTLVs(&body, pdu)
+	}
+
+	return body
+}
+
+
+func packSubmitBody(pdu Pdu) ([]byte) {
 	var body []byte
 
 	appendCOctetString(&body, pdu.service_type)
@@ -413,8 +501,8 @@ func packSubmitBody(pdu pdu) ([]byte) {
 	return body
 }
 
-func Bind(sequence_number uint32, command uint32, system_id string, password string, system_type string, interface_version int, addr_ton int, addr_npi int, address_range string) (pdu) {
-	var bind pdu;
+func Bind(sequence_number uint32, command uint32, system_id string, password string, system_type string, interface_version int, addr_ton int, addr_npi int, address_range string) (Pdu) {
+	var bind Pdu;
 	bind.command_id = command
 	bind.Command_status = 0
 	bind.sequence_number = sequence_number
@@ -431,8 +519,8 @@ func Bind(sequence_number uint32, command uint32, system_id string, password str
 
 
 func SubmitSM(sequence_number uint32, system_type string, source_addr_ton int, source_addr_npi int, source_addr string,
-dest_addr_ton int,dest_addr_npi int,dest_addr string, data_coding int, sm_default_msg_id int, short_message string) (pdu) {
-	var submit pdu;
+dest_addr_ton int,dest_addr_npi int,dest_addr string, data_coding int, sm_default_msg_id int, short_message string) (Pdu) {
+	var submit Pdu;
 	submit.command_id = PDU_COMMAND_SUBMIT_SM
 	submit.Command_status = 0
 	submit.sequence_number = sequence_number
@@ -465,3 +553,35 @@ dest_addr_ton int,dest_addr_npi int,dest_addr string, data_coding int, sm_defaul
 }
 
 
+func BindResp(pdu Pdu, commannd_status uint32,  system_id string) (Pdu) {
+	var bindResp Pdu;
+	bindResp.command_id = pdu.command_id + PDU_COMMAND_RESP;
+	bindResp.Command_status = commannd_status;
+	bindResp.sequence_number = pdu.sequence_number;
+	bindResp.system_id = []byte(system_id);
+	return bindResp
+}
+
+func SubmitResp(pdu Pdu, commannd_status uint32, message_id string) (Pdu) {
+	var submitResp Pdu;
+	submitResp.command_id = pdu.command_id + PDU_COMMAND_RESP;
+	submitResp.Command_status = commannd_status;
+	submitResp.sequence_number = pdu.sequence_number;
+	submitResp.Message_id = []byte(message_id);
+	return submitResp
+}
+
+func EnquireLink(sequence_number uint32) (Pdu) {
+	var bindResp Pdu;
+	bindResp.command_id = PDU_COMMAND_ENQUIRE;
+	bindResp.Command_status = 0;
+	bindResp.sequence_number = sequence_number;
+	return bindResp
+}
+func EnquireLinkResp(pdu Pdu) (Pdu) {
+	var enquireResp Pdu;
+	enquireResp.command_id = pdu.command_id + PDU_COMMAND_RESP;
+	enquireResp.Command_status = PDU_COMMAND_STATUS_ESME_ROK;
+	enquireResp.sequence_number = pdu.sequence_number;
+	return enquireResp
+}
