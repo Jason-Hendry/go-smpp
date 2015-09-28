@@ -14,7 +14,21 @@ type SmppServer struct {
 	OnSubmit OnPduCallback
 	connections map[string]*net.TCPConn
 }
-type OnPduCallback func(Pdu, SmppServer, *net.TCPConn)
+
+type SmppClientConn struct {
+	conn *net.TCPConn
+	server *SmppServer
+	UserId string
+}
+
+func (c *SmppClientConn) Write(data []byte) {
+	c.conn.Write(data)
+}
+func (c *SmppClientConn) WritePdu(pdu Pdu) {
+	c.conn.Write(pdu.Pack())
+}
+
+type OnPduCallback func(Pdu, *SmppClientConn)
 
 func handleClient(conn *net.TCPConn, server SmppServer) {
 	buf := make([]byte, 20480)
@@ -22,6 +36,7 @@ func handleClient(conn *net.TCPConn, server SmppServer) {
 	more := make([]byte, 20480)
 	more = more[:0]
 	buf = buf[:0]
+	client := SmppClientConn{conn, &server, ""}
 	var smppPdu Pdu
 	for {
 		fmt.Printf("Node: %s Waiting to read\n", server.Node)
@@ -34,7 +49,7 @@ func handleClient(conn *net.TCPConn, server SmppServer) {
 		smppPdu = readMore(&buf, &more, &read, readLen)
 		if smppPdu.complete {
 			fmt.Printf("Node: %s Got one\n", server.Node)
-			processPdu(conn, smppPdu, server)
+			processPdu(&client, smppPdu)
 
 		}
 		if err == io.EOF {
@@ -74,29 +89,23 @@ func readMore(bufP *[]byte, moreP *[]byte, readP *[]byte, readLen int) (smppPdu 
 	return smppPdu
 }
 
-func processPdu(conn *net.TCPConn, pdu Pdu, server SmppServer) {
+func processPdu(client *SmppClientConn, pdu Pdu) {
 
+	server := client.server
 	fmt.Printf("Node: %s Got %d\n", server.Node, pdu.command_id)
 
 	switch pdu.command_id {
-		case PDU_COMMAND_BIND_TX, PDU_COMMAND_BIND_TRX, PDU_COMMAND_BIND_RX:
-			fmt.Printf("Node: %s Bind\n", server.Node)
-			go server.OnBind(pdu, server, conn)
-			bind(conn, pdu, server)
+	case PDU_COMMAND_BIND_TX, PDU_COMMAND_BIND_TRX, PDU_COMMAND_BIND_RX:
+		fmt.Printf("Node: %s Bind\n", client.server.Node)
+		go server.OnBind(pdu, client)
 	case PDU_COMMAND_SUBMIT_SM:
 		fmt.Printf("Node: %s SUBMIT_SM\n", server.Node)
-		go server.OnSubmit(pdu, server, conn)
+		go server.OnSubmit(pdu, client)
 	case PDU_COMMAND_ENQUIRE:
 		fmt.Printf("Node: %s ENQUIRE\n", server.Node)
 		resp := EnquireLinkResp(pdu)
-		conn.Write(resp.Pack())
+		client.Write(resp.Pack())
 	}
-}
-
-func bind(conn *net.TCPConn, pdu Pdu, server SmppServer) {
-	fmt.Println("Bind User:%s Pass:%s", string(pdu.system_id), string(pdu.password))
-	resp := BindResp(pdu, 0, server.Node)
-	conn.Write(resp.Pack())
 }
 
 func (server SmppServer) Start() {
@@ -119,9 +128,9 @@ func (server SmppServer) Start() {
 }
 
 
-func Server(node string, bindAddr string) (SmppServer) {
+func Server(node string, bindAddr string) (*SmppServer) {
 	var server SmppServer
 	server.Node = node
 	server.bindAddr = bindAddr
-	return server
+	return &server
 }

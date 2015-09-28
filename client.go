@@ -14,12 +14,12 @@ type Client struct {
 	OnSubmit OnPduCallback
 }
 
-func NewClient(host, username, password string) (Client) {
+func NewClient(host, username, password string) (*Client) {
 	var client Client;
 	client.host = host
 	client.username = username
 	client.password = password
-	return client;
+	return &client;
 }
 
 func listen(conn *net.TCPConn) {
@@ -58,7 +58,7 @@ func keepAlive(conn *net.TCPConn) {
 	}
 }
 
-func (c Client) Start() {
+func (c *Client) Start() {
 	addr,err := net.ResolveTCPAddr("tcp", c.host)
 	if !HandleError("Failed to resolve", err) {
 		return
@@ -84,7 +84,7 @@ func (c Client) Start() {
 	c.conn = conn;
 }
 
-func (c Client) Send(source,destination,message string) {
+func (c *Client) Send(source,destination,message string) {
 	sms := SubmitSM(1, "GO-SMPP", 1, 1, source, 1, 1, destination, PDU_DATA_CODING_LATIN_1, 0, message)
 	data := sms.Pack()
 	fmt.Printf("Wrote %d bytes\n", len(data))

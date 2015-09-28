@@ -585,3 +585,10 @@ func EnquireLinkResp(pdu Pdu) (Pdu) {
 	enquireResp.sequence_number = pdu.sequence_number;
 	return enquireResp
 }
+
+func (p *Pdu) GetSystemID() (string) {
+	return string(p.system_id)
+}
+func (p *Pdu) GetPassword() (string) {
+	return string(p.password)
+}
