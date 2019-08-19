@@ -1,0 +1,8 @@
+github.com/Jason-Hendry/go-smpp v0.0.0-20150928095902-88e34c9a8edc h1:D/Dj3NRF4G33zUUdQeCy1f1O2qHtgHTUuYdY/HmURrY=
+github.com/Jason-Hendry/go-smpp v0.0.0-20150928095902-88e34c9a8edc/go.mod h1:PBeOc3h0oWNaA/LJxJA1AfHFOXyTJ+u2PhFUIe5PXgI=
+github.com/google/uuid v1.0.0 h1:b4Gk+7WdP/d3HZH8EJsZpvV7EtDOgaZLtnaNGIu1adA=
+github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
+github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/pborman/uuid v1.2.0 h1:J7Q5mO4ysT1dv8hyrUGHb9+ooztCXu1D8MY8DZYsu3g=
+github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
