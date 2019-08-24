@@ -1,24 +1,22 @@
 package main
 
 import (
-	"ghiac/sample-smpp/signal"
+	"github.com/ghiac/go-smpp"
 	"time"
 )
 
-//	host string
-//	username string
-//	password string
-//	conn *net.TCPConn
-//	OnBind OnPduCallback
-//	OnSubmit OnPduCallback
-
 func main() {
-	temp := NewClient("localhost:7878", "<username>", "<password>")
+	token := "token"
+	temp := go_smpp.NewClient("localhost:7878", "admin", "admin")
 	temp.Start()
-	temp.Send("ss33s", "ss333ss", "sss213213s")
-	time.Sleep(2 * time.Millisecond)
-	temp.Send("s3123ss22", "ss3213123ss", "ss321312332ss")
-	time.Sleep(2 * time.Millisecond)
-	temp.Send("ss33s", "s1321sss", "sss312s")
-	<-signal.Wait()
+	des := "898625337"
+	var parameters []go_smpp.Parameter
+	parameters = append(parameters, go_smpp.NewParameter(1, []byte(token)))
+	time.Sleep(1000 * time.Millisecond)
+	temp.Send("userId", des, "msg1", parameters)
+	time.Sleep(1000 * time.Millisecond)
+	temp.Send("aa", des, "msg2", parameters)
+	time.Sleep(1000 * time.Millisecond)
+	temp.Send("aa", des, "msg3", parameters)
+	//<-signal.Wait()
 }

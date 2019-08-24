@@ -1,5 +1,11 @@
 github.com/Jason-Hendry/go-smpp v0.0.0-20150928095902-88e34c9a8edc h1:D/Dj3NRF4G33zUUdQeCy1f1O2qHtgHTUuYdY/HmURrY=
 github.com/Jason-Hendry/go-smpp v0.0.0-20150928095902-88e34c9a8edc/go.mod h1:PBeOc3h0oWNaA/LJxJA1AfHFOXyTJ+u2PhFUIe5PXgI=
+github.com/ghiac/go-smpp v0.0.0-20190826134752-d19069a5f92b h1:SpkjVkYIOiHC2G1xKjcamliRDKjixUYkSA0bDkRdHuY=
+github.com/ghiac/go-smpp v0.0.0-20190826134752-d19069a5f92b/go.mod h1:Iznim+5/GUmhAkgWDgWp49Tb88H7maHh67b8aIcm09Y=
+github.com/ghiac/go-smpp v0.0.0-20190826135515-d2059bfd740b h1:HQAayHYKuVkbkCM7OqHEPamqYJkDy/RuZCgaOmDK0eI=
+github.com/ghiac/go-smpp v0.0.0-20190826135515-d2059bfd740b/go.mod h1:Iznim+5/GUmhAkgWDgWp49Tb88H7maHh67b8aIcm09Y=
+github.com/ghiac/go-smpp v0.0.0-20190826140313-89830b71480f h1:4dhQUFItkIFnobba885iccdKgxgh8jvS5NAgY9IB2Ac=
+github.com/ghiac/go-smpp v0.0.0-20190826140313-89830b71480f/go.mod h1:Iznim+5/GUmhAkgWDgWp49Tb88H7maHh67b8aIcm09Y=
 github.com/google/uuid v1.0.0 h1:b4Gk+7WdP/d3HZH8EJsZpvV7EtDOgaZLtnaNGIu1adA=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
