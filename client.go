@@ -54,7 +54,10 @@ func keepAlive(conn *net.TCPConn) {
 	for {
 		time.Sleep(60 * time.Second)
 		enq := EnquireLink(1)
-		conn.Write(enq.Pack())
+		_, err := conn.Write(enq.Pack())
+		if err != nil {
+			fmt.Println("Error: Can't send message")
+		}
 	}
 }
 
@@ -79,15 +82,27 @@ func (c *Client) Start() {
 	bind := Bind(1, PDU_COMMAND_BIND_TX, c.username, c.password, "GO-SMPP", 0, 1, 1, "")
 	data := bind.Pack()
 	fmt.Printf("Wrote %d bytes\n", len(data))
-	conn.Write(data)
 
-	c.conn = conn;
+	if conn != nil {
+		_, err = conn.Write(data)
+		if err != nil {
+			fmt.Println("Error: Can't send message")
+		}
+		c.conn = conn
+	} else {
+		fmt.Println("Error: Can't establish connection")
+	}
 }
 
 func (c *Client) Send(source,destination,message string) {
 	sms := SubmitSM(1, "GO-SMPP", 1, 1, source, 1, 1, destination, PDU_DATA_CODING_LATIN_1, 0, message)
 	data := sms.Pack()
-	fmt.Printf("Wrote %d bytes\n", len(data))
-	c.conn.Write(data)
+	if c.conn != nil {
+		_, err := c.conn.Write(data)
+		if err != nil {
+			fmt.Println("Error: Can't send message")
+		}
+	} else {
+		fmt.Println("Error: Connection unestablished")
+	}
 }
-

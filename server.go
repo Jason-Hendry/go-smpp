@@ -22,10 +22,16 @@ type SmppClientConn struct {
 }
 
 func (c *SmppClientConn) Write(data []byte) {
-	c.conn.Write(data)
+	_, err := c.conn.Write(data)
+	if err != nil {
+		fmt.Println("Error in Write data")
+	}
 }
 func (c *SmppClientConn) WritePdu(pdu Pdu) {
-	c.conn.Write(pdu.Pack())
+	_, err := c.conn.Write(pdu.Pack())
+	if err != nil {
+		fmt.Println("Error in Write Pdu")
+	}
 }
 
 type OnPduCallback func(Pdu, *SmppClientConn)
@@ -50,12 +56,10 @@ func handleClient(conn *net.TCPConn, server SmppServer) {
 		if smppPdu.complete {
 			fmt.Printf("Node: %s Got one\n", server.Node)
 			processPdu(&client, smppPdu)
-
 		}
 		if err == io.EOF {
-
+			fmt.Println("END OF FILE")
 		}
-
 	}
 }
 
@@ -97,14 +101,38 @@ func processPdu(client *SmppClientConn, pdu Pdu) {
 	switch pdu.command_id {
 	case PDU_COMMAND_BIND_TX, PDU_COMMAND_BIND_TRX, PDU_COMMAND_BIND_RX:
 		fmt.Printf("Node: %s Bind\n", client.server.Node)
-		go server.OnBind(pdu, client)
+		if server.OnBind != nil {
+			server.OnBind(pdu, client)
+		} else {
+			fmt.Println("Error: Undefined OnBind")
+		}
 	case PDU_COMMAND_SUBMIT_SM:
 		fmt.Printf("Node: %s SUBMIT_SM\n", server.Node)
-		go server.OnSubmit(pdu, client)
+		if server.OnSubmit != nil {
+			if GetSmppClient(client).UserId != "" {
+				go server.OnSubmit(pdu, GetSmppClient(client))
+			} else {
+				var emptyByte []byte
+				GetSmppClient(client).Write(emptyByte)
+			}
+		} else {
+			fmt.Println("Error: Undefined OnBind")
+		}
 	case PDU_COMMAND_ENQUIRE:
 		fmt.Printf("Node: %s ENQUIRE\n", server.Node)
-		resp := EnquireLinkResp(pdu)
-		client.Write(resp.Pack())
+		if server.OnSubmit != nil {
+			if GetSmppClient(client).UserId != "" {
+				go server.OnSubmit(pdu, GetSmppClient(client))
+				resp := EnquireLinkResp(pdu)
+				GetSmppClient(client).Write(resp.Pack())
+			} else {
+				fmt.Println("Forbidden")
+				var emptyByte []byte
+				GetSmppClient(client).Write(emptyByte)
+			}
+		} else {
+			fmt.Println("Error: Undefined OnBind")
+		}
 	}
 }
 
