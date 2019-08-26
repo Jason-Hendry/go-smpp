@@ -1,9 +1,10 @@
 package go_smpp
+
 import (
-	"net"
 	"fmt"
+	"github.com/pborman/uuid"
 	"io"
-	"code.google.com/p/go-uuid/uuid"
+	"net"
 )
 
 type SmppServer struct {
