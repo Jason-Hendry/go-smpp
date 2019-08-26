@@ -143,16 +143,6 @@ const PDU_DATA_CODING_KSC = 14   // 0 0 0 0 1 1 1 0 KS C 5601 b
 // 1 1 1 0 x x x x reserved
 // 1 1 1 1 x x x x GSM message class control - see [GSM 03.38] e
 
-type Parameter struct {
-	tag    uint16
-	length uint16
-	value  []byte
-}
-
-func (p *Parameter) GetValue() string {
-	return string(p.value)
-}
-
 type Pdu struct {
 	commandLength  uint32
 	commandId      uint32
