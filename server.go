@@ -93,6 +93,14 @@ func readMore(bufP *[]byte, moreP *[]byte, readP *[]byte, readLen int) (smppPdu 
 	return smppPdu
 }
 
+func GetSmppClient(smpp *SmppClientConn) *SmppClientConn {
+	return smpp.server.connections[smpp.conn.RemoteAddr().String()]
+}
+
+func SetSmppClient(smppClient *SmppClientConn) {
+	smppClient.server.connections[smppClient.conn.RemoteAddr().String()] = smppClient
+}
+
 func processPdu(client *SmppClientConn, pdu Pdu) {
 
 	server := client.server
@@ -150,7 +158,7 @@ func (server SmppServer) Start() {
 		conn,err := bind.AcceptTCP()
 		HandleError("Failed to accept client", err)
 		fmt.Printf("Node: %s Connection: %s\n", server.Node, conn.RemoteAddr().String())
-		// server.connections[conn.RemoteAddr().String()] = conn
+		server.connections[conn.RemoteAddr().String()] = &SmppClientConn{conn: conn, server: &server}
 		go handleClient(conn, server)
 	}
 }
@@ -160,5 +168,6 @@ func Server(node string, bindAddr string) (*SmppServer) {
 	var server SmppServer
 	server.Node = node
 	server.bindAddr = bindAddr
+	server.connections = make(map[string]*SmppClientConn)
 	return &server
 }
